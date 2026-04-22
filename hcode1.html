@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to right, #74ebd5, #acb6e5);
+    margin: 0;
+    padding: 0;
+}
+
+/* Main Container */
+#main {
+    width: 400px;
+    margin: 80px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    text-align: center;
+}
+
+/* Inputs */
+input {
+    width: 90%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    font-size: 14px;
+}
+
+/* Buttons */
+button {
+    padding: 10px 15px;
+    margin: 10px 5px;
+    border: none;
+    border-radius: 8px;
+    background: #4CAF50;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #45a049;
+}
+
+/* Delete Button */
+li button {
+    background: #ff4d4d;
+    margin-left: 10px;
+}
+
+li button:hover {
+    background: #cc0000;
+}
+
+/* List */
+ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 15px;
+}
+
+/* List Items */
+li {
+    background: #f2f2f2;
+    margin: 8px 0;
+    padding: 10px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Total */
+#total {
+    margin-top: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+}
+</style>
+    </head>
+    <body>
+        <div id="main">
+
+        </div>
+    </body>
+    <script>
+        let id=0;
+        function showUI(){
+            document.getElementById("main").innerHTML=`<input type="text" id="food" placeholder="Enter food name">
+            <input type="number" id="cost"placeholder="Enter amount">
+            <button onclick="addexpense()">ADD</button>
+            <button onclick="total()">TOTAL</button>
+            <ul id="list"></ul>
+            <p id="total"></p>`
+            loadlist();
+        }
+        function addexpense(){
+            id=id+1
+            let food=document.getElementById("food").value;
+            let amount=document.getElementById("cost").value;
+            fetch(`http://localhost:8080/addexpense`,{
+                method:"POST",
+                headers:{
+                    "Content-type":"application/json",
+                },
+                    body:JSON.stringify({"food":food,"amount":amount,"username":username})
+                
+            }).then(()=>loadlist());
+        }
+        function loadlist(){
+            let list=document.getElementById("list")
+            list.innerHTML=""
+            fetch(`http://localhost:8080/getexpenses`).then(Response=>Response.json()).then(data=>{
+                data.forEach(expense=>{
+                    let li=document.createElement("li");
+                    li.innerHTML=`${expense.id} ${expense.food} ${expense.amount}<button onclick="deleteexpense(${expense.id})">DELETE</button>`
+                    list.appendChild(li);
+                })
+            })
+            
+        }
+        function deleteexpense(id){
+            fetch(`http://localhost:8080/deleteexpense/${id}`,{
+                method:"DELETE"
+            }).then(()=>loadlist());
+        }
+        function total(){
+            fetch(`http://localhost:8080/totalexpense`).then(Response=>Response.text()).then(data=>{
+                document.getElementById("total").innerText="Total:"+data;
+            })
+        }
+        showUI();
+    </script>
+
+</html>
